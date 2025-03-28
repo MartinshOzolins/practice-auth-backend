@@ -1,0 +1,15 @@
+// Task Manager API (Node.js practice)
+
+// API structure
+auth
+POST api/auth/signup 
+POST api/auth/login
+GET api/auth/profile
+
+tasks
+GET api/tasks
+GET api/task/:id
+POST api/tasks
+PUT api/tasks/:id
+DELETE api/tasks/:id
+
