@@ -2,10 +2,11 @@ import express from "express";
 
 // for middlewares
 import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
 
 // routers
 import authRouter from "./routes/authRouter.js";
-import cookieParser from "cookie-parser";
+import taskRouter from "./routes/taskRouter.js";
 
 // creates instance of app
 export const app = express();
@@ -27,3 +28,4 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api/auth", authRouter);
+app.use("/api/tasks", taskRouter);

@@ -1,10 +1,9 @@
 // functions
 import bcrypt from "bcrypt";
-import { v4 as uuidv4 } from "uuid";
 
 // utils
 import { signToken } from "../utils/auth.js";
-import { readDB, writeDB } from "../utils/db.js";
+import { fetchUser, insertNewUser } from "../utils/dbUtils.js";
 
 // singup controller
 export async function signup(req, res) {
@@ -15,43 +14,30 @@ export async function signup(req, res) {
       return res.status(400).send("Please provide email and password");
     }
 
-    // Creates random user id
-    const userId = uuidv4();
-
     // Hashes password
     const hash = await bcrypt.hash(password, 15);
-    const newUser = { email, password: hash, id: userId };
-
-    // reads users array from db.json
-    const jsonData = await readDB();
-
-    // checks if email already exist
-    const user = jsonData.users.find((user) => user.email === email);
-
-    if (user) {
-      res.status(400).send("Such email already exists!. Try loggin in.");
-    }
+    const newUser = { email, password: hash };
 
     // inserts new user
-    jsonData.users.push(newUser);
-
-    // writes updated users array back to db.json
-    await writeDB(jsonData);
+    const { userId } = await insertNewUser(newUser);
 
     // creates a jwt
     const token = signToken(userId);
 
-    // sets a cookie with a jwt within response header
+    //sets a cookie with a jwt within response header
     res.cookie("jwt", token, {
       expires: new Date(Date.now() + 900000),
       httpOnly: true,
       //secure: true, // only for production
     });
-
     res.status(201).json({ status: "success" });
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error Occurred: Try again later!");
+    if (err.dbError) {
+      res.status(401).send("Error Occured. Such email already exists.");
+    } else {
+      res.status(500).send("Error Occurred: Try again later!");
+    }
   }
 }
 
@@ -67,7 +53,7 @@ export async function login(req, res) {
     }
 
     // reads users array from db.json
-    const jsonData = await readDB();
+    const jsonData = await fetchUser();
 
     // retrieves user based on email
     const user = jsonData.users.find((user) => user.email === email);
