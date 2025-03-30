@@ -11,10 +11,20 @@ const router = express.Router();
 export default router;
 
 // utils
-async function getAllUsers() {
+async function readDB() {
   const data = await fs.readFile("db.json", "utf-8");
   const jsonData = JSON.parse(data);
   return jsonData;
+}
+
+async function writeDB(data) {
+  await fs.writeFile("db.json", JSON.stringify(data, null, 2), "utf-8");
+}
+
+function signToken(id) {
+  return jwt.sign({ id: id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
 }
 
 // Routes
@@ -35,7 +45,7 @@ router.post("/signup", async (req, res) => {
     const newUser = { email, password: hash, id: userId };
 
     // reads users array from db.json
-    const jsonData = await getAllUsers();
+    const jsonData = await readDB();
 
     // checks if email already exist
     const user = jsonData.users.find((user) => user.email === email);
@@ -48,12 +58,10 @@ router.post("/signup", async (req, res) => {
     jsonData.users.push(newUser);
 
     // writes updated users array back to db.json
-    await fs.writeFile("db.json", JSON.stringify(jsonData, null, 2), "utf-8");
+    await writeDB(jsonData);
 
     // creates a jwt
-    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-    });
+    const token = signToken(userId);
 
     // sets a cookie with a jwt within response header
     res.cookie("jwt", token, {
@@ -81,7 +89,7 @@ router.post("/login", async (req, res) => {
     }
 
     // reads users array from db.json
-    const jsonData = await getAllUsers();
+    const jsonData = await readDB();
 
     // retrieves user based on email
     const user = jsonData.users.find((user) => user.email === email);
@@ -97,6 +105,16 @@ router.post("/login", async (req, res) => {
     if (!isPasswordCorrect) {
       return res.status(401).send("Incorrect email or password");
     }
+
+    // creates a new jwt
+    const token = signToken(user.id);
+
+    // sets a cookie with a jwt within response header
+    res.cookie("jwt", token, {
+      expires: new Date(Date.now() + 900000),
+      httpOnly: true,
+      //secure: true, // only for production
+    });
 
     res.status(200).send("Success");
   } catch (err) {
