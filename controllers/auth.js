@@ -2,7 +2,7 @@
 import bcrypt from "bcrypt";
 
 // utils
-import { signToken } from "../utils/auth.js";
+import { attachJWTCookie, signToken } from "../utils/auth.js";
 import { fetchUser, insertNewUser } from "../utils/dbUtils.js";
 
 // singup controller
@@ -25,11 +25,8 @@ export async function signup(req, res) {
     const token = signToken(userId);
 
     //sets a cookie with a jwt within response header
-    res.cookie("jwt", token, {
-      expires: new Date(Date.now() + 900000),
-      httpOnly: true,
-      //secure: true, // only for production
-    });
+    attachJWTCookie(res, token);
+
     res.status(201).json({ status: "success" });
   } catch (err) {
     console.log(err);
@@ -74,12 +71,8 @@ export async function login(req, res) {
     // creates a new jwt
     const token = signToken(data.user[0].id);
 
-    // sets a cookie with a jwt within response header
-    res.cookie("jwt", token, {
-      expires: new Date(Date.now() + 900000),
-      httpOnly: true,
-      //secure: true, // only for production
-    });
+    //sets a cookie with a jwt within response header
+    attachJWTCookie(res, token);
 
     res.status(200).send("Success");
   } catch (err) {
