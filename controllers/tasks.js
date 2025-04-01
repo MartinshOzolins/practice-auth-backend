@@ -118,14 +118,6 @@ export async function insertTask(req, res) {
     ); // { id: 3, iat: 1743358615, exp: 1751134615 }
     console.log(decoded);
 
-    if (!decoded) {
-      res
-        .status(401)
-        .send(
-          "You do not have permission to perform this action. Please login again!"
-        );
-    }
-
     // retrieves title and description
     const { title, description } = req.body;
 
@@ -141,12 +133,11 @@ export async function insertTask(req, res) {
       res.status(200).send("Task successfully added!");
     }
   } catch (err) {
+    // Sends specific error messages related to jwt verify failure
     if (err.name === "JsonWebTokenError") {
-      return res
-        .status(401)
-        .send("Invalid or expired token. Please log in again.");
+      return res.status(401).send("Invalid token. Please log in again.");
     }
-    // Send a generic server error response for any unhandled errors
+    // Sends a generic server error response for any unhandled errors
     res.status(500).send("Error Occurred: Try again later!");
   }
 }
