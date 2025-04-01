@@ -28,26 +28,25 @@ export async function getUserTasks(req, res) {
     ); // { id: 3, iat: 1743358615, exp: 1751134615 }
     console.log(decoded);
 
-    if (!decoded) {
-      res
-        .status(401)
-        .send(
-          "You do not have permission to perform this action. Please login again!"
-        );
-    }
+    // if verify fails, it will throw an error
 
     // Fetch user tasks based on the decoded user ID
     const data = await fetchUserTasks(decoded.id);
 
     // If no tasks, return explanation
     if (data?.rows?.length === 0) {
-      return res.status(200).send("No data available. Please add some tasks!");
+      return res.status(404).send("No data available. Please add some tasks!");
     }
 
     // Return the tasks
     res.status(200).json(data);
   } catch (err) {
     console.error(err.message);
+    if (err.name === "JsonWebTokenError") {
+      return res
+        .status(401)
+        .send("Invalid or expired token. Please log in again.");
+    }
     res.status(500).send("Error Occurred: Try again later!");
   }
 }
@@ -63,12 +62,12 @@ export async function getUserTask(req, res) {
         .status(401)
         .send("You are not loged in! Please log in to get access.");
     }
+
     // verify jwt
     const decoded = await util.promisify(jwt.verify)(
       token,
       process.env.JWT_SECRET
     ); // { id: 3, iat: 1743358615, exp: 1751134615 }
-    console.log(decoded);
 
     if (!decoded) {
       res
@@ -86,13 +85,17 @@ export async function getUserTask(req, res) {
 
     // If no tasks, return explanation
     if (data?.rows?.length === 0) {
-      return res.status(200).send("No data available. Please add some tasks!");
+      return res.status(404).send("No data available. Please add some tasks!");
     }
 
     // Return the tasks
     res.status(200).json(data);
   } catch (err) {
-    console.error(err.message);
+    if (err.name === "JsonWebTokenError") {
+      return res
+        .status(401)
+        .send("Invalid or expired token. Please log in again.");
+    }
     res.status(500).send("Error Occurred: Try again later!");
   }
 }
@@ -127,7 +130,7 @@ export async function insertTask(req, res) {
     const { title, description } = req.body;
 
     if (!title || !description) {
-      res.status(200).send("Please provide both title and description!");
+      return res.status(400).send("Please provide both title and description!");
     }
 
     // inserts new task
@@ -138,7 +141,12 @@ export async function insertTask(req, res) {
       res.status(200).send("Task successfully added!");
     }
   } catch (err) {
-    console.error(err.message);
+    if (err.name === "JsonWebTokenError") {
+      return res
+        .status(401)
+        .send("Invalid or expired token. Please log in again.");
+    }
+    // Send a generic server error response for any unhandled errors
     res.status(500).send("Error Occurred: Try again later!");
   }
 }
