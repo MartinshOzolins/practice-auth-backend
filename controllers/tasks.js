@@ -42,11 +42,16 @@ export async function getUserTasks(req, res) {
     res.status(200).json(data);
   } catch (err) {
     console.error(err.message);
+    // Sends specific error messages related to jwt verify failure
     if (err.name === "JsonWebTokenError") {
+      return res.status(401).send("Invalid token. Please log in again.");
+    } else if (err.name === "TokenExpiredError") {
       return res
         .status(401)
-        .send("Invalid or expired token. Please log in again.");
+        .send("Your session has expired. Please log in again.");
     }
+
+    // Sends a generic server error response for any unhandled errors
     res.status(500).send("Error Occurred: Try again later!");
   }
 }
@@ -91,11 +96,17 @@ export async function getUserTask(req, res) {
     // Return the tasks
     res.status(200).json(data);
   } catch (err) {
+    console.error(err.message);
+    // Sends specific error messages related to jwt verify failure
     if (err.name === "JsonWebTokenError") {
+      return res.status(401).send("Invalid token. Please log in again.");
+    } else if (err.name === "TokenExpiredError") {
       return res
         .status(401)
-        .send("Invalid or expired token. Please log in again.");
+        .send("Your session has expired. Please log in again.");
     }
+
+    // Sends a generic server error response for any unhandled errors
     res.status(500).send("Error Occurred: Try again later!");
   }
 }
@@ -133,9 +144,14 @@ export async function insertTask(req, res) {
       res.status(200).send("Task successfully added!");
     }
   } catch (err) {
+    console.error(err.message);
     // Sends specific error messages related to jwt verify failure
     if (err.name === "JsonWebTokenError") {
       return res.status(401).send("Invalid token. Please log in again.");
+    } else if (err.name === "TokenExpiredError") {
+      return res
+        .status(401)
+        .send("Your session has expired. Please log in again.");
     }
     // Sends a generic server error response for any unhandled errors
     res.status(500).send("Error Occurred: Try again later!");
