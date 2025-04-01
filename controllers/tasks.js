@@ -1,7 +1,3 @@
-// functions
-import jwt from "jsonwebtoken";
-import util from "node:util";
-
 // utils
 import { validateNumber } from "../utils/utils.js";
 import { verifyJWT } from "../utils/auth.js";

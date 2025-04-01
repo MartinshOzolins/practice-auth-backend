@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import util from "node:util";
 
 export function signToken(id) {
   return jwt.sign({ id: id }, process.env.JWT_SECRET, {
