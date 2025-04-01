@@ -4,6 +4,7 @@ import util from "node:util";
 
 // utils
 import { validateNumber } from "../utils/utils.js";
+import { verifyJWT } from "../utils/auth.js";
 
 // db functions
 import {
@@ -12,12 +13,12 @@ import {
   deleteUserTask,
   insertNewUserTask,
 } from "../utils/dbUtils.js";
-import { response } from "express";
 
 export async function getUserTasks(req, res) {
   try {
     // check for jwt
     let token = req.cookies.jwt;
+    // { jwt: 'eyJhbGciOiJIUzI1asdR5cCI6IkpXVC.eyJpZdasdaNCwiaWF0IjodasdA1LCJleHAiOjE3NTdasdV9.3BnbZpU4rPn9rBAeT6jdasdLDThvXf3vAp5d2hoA'}
 
     // unauthorised access denied
     if (!token) {
@@ -26,11 +27,7 @@ export async function getUserTasks(req, res) {
         .send("You are not logged in! Please log in to get access.");
     }
     // verify jwt
-    const decoded = await util.promisify(jwt.verify)(
-      token,
-      process.env.JWT_SECRET
-    ); // { id: 3, iat: 1743358615, exp: 1751134615 }
-    console.log(decoded);
+    const decoded = verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
 
     // if verify fails, it will throw an error
 
@@ -64,6 +61,7 @@ export async function getUserTask(req, res) {
   try {
     // check for jwt
     let token = req.cookies.jwt;
+    // { jwt: 'eyJhbGciOiJIUzI1asdR5cCI6IkpXVC.eyJpZdasdaNCwiaWF0IjodasdA1LCJleHAiOjE3NTdasdV9.3BnbZpU4rPn9rBAeT6jdasdLDThvXf3vAp5d2hoA'}
 
     // unauthorised access denied
     if (!token) {
@@ -73,10 +71,7 @@ export async function getUserTask(req, res) {
     }
 
     // verify jwt
-    const decoded = await util.promisify(jwt.verify)(
-      token,
-      process.env.JWT_SECRET
-    ); // { id: 3, iat: 1743358615, exp: 1751134615 }
+    const decoded = verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
 
     if (!decoded) {
       res
@@ -119,6 +114,7 @@ export async function insertTask(req, res) {
   try {
     // check for jwt
     let token = req.cookies.jwt;
+    // { jwt: 'eyJhbGciOiJIUzI1asdR5cCI6IkpXVC.eyJpZdasdaNCwiaWF0IjodasdA1LCJleHAiOjE3NTdasdV9.3BnbZpU4rPn9rBAeT6jdasdLDThvXf3vAp5d2hoA'}
 
     // unauthorised access denied
     if (!token) {
@@ -127,10 +123,7 @@ export async function insertTask(req, res) {
         .send("You are not logged in! Please log in to get access.");
     }
     // verify jwt
-    const decoded = await util.promisify(jwt.verify)(
-      token,
-      process.env.JWT_SECRET
-    ); // { id: 3, iat: 1743358615, exp: 1751134615 }
+    const decoded = verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
 
     // retrieves title and description
     const { title, description } = req.body;
@@ -163,10 +156,9 @@ export async function insertTask(req, res) {
 
 export async function deleteTask(req, res) {
   try {
-    console.log(req.cookies);
-
     // check for jwt
     let token = req.cookies.jwt;
+    // { jwt: 'eyJhbGciOiJIUzI1asdR5cCI6IkpXVC.eyJpZdasdaNCwiaWF0IjodasdA1LCJleHAiOjE3NTdasdV9.3BnbZpU4rPn9rBAeT6jdasdLDThvXf3vAp5d2hoA'}
 
     // unauthorised access denied
     if (!token) {
@@ -176,10 +168,7 @@ export async function deleteTask(req, res) {
     }
 
     // verify jwt
-    const decoded = await util.promisify(jwt.verify)(
-      token,
-      process.env.JWT_SECRET
-    ); // { id: 3, iat: 1743358615, exp: 1751134615 }
+    const decoded = verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
 
     if (decoded.id) {
       // Validates ID number

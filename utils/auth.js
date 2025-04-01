@@ -14,3 +14,8 @@ export function attachJWTCookie(res, token) {
     //secure: true, // only for production
   });
 }
+
+// verifies jwt
+export async function verifyJWT(token) {
+  return await util.promisify(jwt.verify)(token, process.env.JWT_SECRET); // { id: 3, iat: 1743358615, exp: 1751134615 }
+}
