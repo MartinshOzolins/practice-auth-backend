@@ -78,7 +78,7 @@ export async function insertNewUserTask(userId, title, description) {
 }
 
 // Delete a task
-export async function deleteUserTask({ userId, taskId }) {
+export async function deleteUserTask(userId, taskId) {
   return new Promise((resolve, reject) => {
     db.run(
       "DELETE FROM tasks WHERE id = ? AND user_id = ?",

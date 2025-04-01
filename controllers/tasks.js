@@ -2,6 +2,9 @@
 import jwt from "jsonwebtoken";
 import util from "node:util";
 
+// utils
+import { validateNumber } from "../utils/utils.js";
+
 // db functions
 import {
   fetchUserTasks,
@@ -9,6 +12,7 @@ import {
   deleteUserTask,
   insertNewUserTask,
 } from "../utils/dbUtils.js";
+import { response } from "express";
 
 export async function getUserTasks(req, res) {
   try {
@@ -19,7 +23,7 @@ export async function getUserTasks(req, res) {
     if (!token) {
       return res
         .status(401)
-        .send("You are not loged in! Please log in to get access.");
+        .send("You are not logged in! Please log in to get access.");
     }
     // verify jwt
     const decoded = await util.promisify(jwt.verify)(
@@ -65,7 +69,7 @@ export async function getUserTask(req, res) {
     if (!token) {
       return res
         .status(401)
-        .send("You are not loged in! Please log in to get access.");
+        .send("You are not logged in! Please log in to get access.");
     }
 
     // verify jwt
@@ -120,14 +124,13 @@ export async function insertTask(req, res) {
     if (!token) {
       return res
         .status(401)
-        .send("You are not loged in! Please log in to get access.");
+        .send("You are not logged in! Please log in to get access.");
     }
     // verify jwt
     const decoded = await util.promisify(jwt.verify)(
       token,
       process.env.JWT_SECRET
     ); // { id: 3, iat: 1743358615, exp: 1751134615 }
-    console.log(decoded);
 
     // retrieves title and description
     const { title, description } = req.body;
@@ -158,4 +161,53 @@ export async function insertTask(req, res) {
   }
 }
 
-export async function deleteTask(req, res) {}
+export async function deleteTask(req, res) {
+  try {
+    console.log(req.cookies);
+
+    // check for jwt
+    let token = req.cookies.jwt;
+
+    // unauthorised access denied
+    if (!token) {
+      return res
+        .status(401)
+        .send("You are not logged in! Please log in to get access.");
+    }
+
+    // verify jwt
+    const decoded = await util.promisify(jwt.verify)(
+      token,
+      process.env.JWT_SECRET
+    ); // { id: 3, iat: 1743358615, exp: 1751134615 }
+
+    if (decoded.id) {
+      // Validates ID number
+      const id = validateNumber(req.params.id);
+      if (id === null) {
+        return res.status(400).send("Invalid number input.");
+      }
+
+      // Deletes task
+      const response = await deleteUserTask(decoded.id, id);
+
+      if (response?.status === "success") {
+        return res.status(204).send("Successfully deleted!");
+      } else {
+        res.status(500).send("Error Occurred: Try again later!");
+      }
+    }
+  } catch (err) {
+    console.error(err.message);
+    // Sends specific error messages related to jwt verify failure
+    if (err.name === "JsonWebTokenError") {
+      return res.status(401).send("Invalid token. Please log in again.");
+    } else if (err.name === "TokenExpiredError") {
+      return res
+        .status(401)
+        .send("Your session has expired. Please log in again.");
+    }
+    // Sends a generic server error response for any unhandled errors
+    res.status(500).send("Error Occurred: Try again later!");
+  }
+}
