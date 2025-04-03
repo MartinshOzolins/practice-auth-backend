@@ -57,4 +57,20 @@ app.use((err, req, res, next) => {
 
   // Sends a generic server error response for any unhandled errors
   res.status(500).send("Error Occurred: Try again later!");
+
+  // auth
+  console.log(err);
+  if (err.dbError) {
+    res.status(401).send("Error Occured. Such email already exists.");
+  } else {
+    res.status(500).send("Error Occurred: Try again later!");
+  }
+
+  //login
+  console.log(err);
+  if (err.dbError) {
+    res.status(401).send("Error Occured: Password or email incorrect!");
+  } else {
+    res.status(500).send("Error Occurred: Try again later!");
+  }
 });
