@@ -45,32 +45,32 @@ app.use("*", (req, res) => {
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
-  console.error(err.message);
-  // Sends specific error messages related to jwt verify failure
+  console.log(err);
+  // JWT: Sends specific error messages related to jwt verify failure
   if (err.name === "JsonWebTokenError") {
     return res.status(401).send("Invalid token. Please log in again.");
-  } else if (err.name === "TokenExpiredError") {
+  }
+  if (err.name === "TokenExpiredError") {
     return res
       .status(401)
       .send("Your session has expired. Please log in again.");
   }
 
+  // Database errors:
+  // registration error
+  if (err.dbRegError) {
+    return res.status(400).send("Error Occured. Such email already exists.");
+  }
+  // delete error
+  if (err.dbDeleteError) {
+    return res.status(400).send("Such task does not exist!");
+  }
+  // other errors
+  if (err.dbError) {
+    return res.status(400).send("Error Occured: Password or email incorrect!");
+  }
+
+  // Generic error:
   // Sends a generic server error response for any unhandled errors
   res.status(500).send("Error Occurred: Try again later!");
-
-  // auth
-  console.log(err);
-  if (err.dbError) {
-    res.status(401).send("Error Occured. Such email already exists.");
-  } else {
-    res.status(500).send("Error Occurred: Try again later!");
-  }
-
-  //login
-  console.log(err);
-  if (err.dbError) {
-    res.status(401).send("Error Occured: Password or email incorrect!");
-  } else {
-    res.status(500).send("Error Occurred: Try again later!");
-  }
 });

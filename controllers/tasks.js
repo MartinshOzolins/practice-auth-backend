@@ -23,7 +23,7 @@ export const getUserTasks = catchAsync(async function (req, res) {
       .send("You are not logged in! Please log in to get access.");
   }
   // verify jwt
-  const decoded = verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
+  const decoded = await verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
 
   // if verify fails, it will throw an error
 
@@ -37,7 +37,6 @@ export const getUserTasks = catchAsync(async function (req, res) {
 
   // Return the tasks
   res.status(200).json(data);
-  s;
 });
 
 export const getUserTask = catchAsync(async function (req, res) {
@@ -53,7 +52,7 @@ export const getUserTask = catchAsync(async function (req, res) {
   }
 
   // verify jwt
-  const decoded = verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
+  const decoded = await verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
 
   if (!decoded) {
     res
@@ -90,7 +89,7 @@ export const insertTask = catchAsync(async function (req, res) {
       .send("You are not logged in! Please log in to get access.");
   }
   // verify jwt
-  const decoded = verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
+  const decoded = await verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
 
   // retrieves title and description
   const { title, description } = req.body;
@@ -108,6 +107,8 @@ export const insertTask = catchAsync(async function (req, res) {
   }
 });
 
+//
+
 export const deleteTask = catchAsync(async function (req, res) {
   // check for jwt
   let token = req.cookies.jwt;
@@ -121,7 +122,7 @@ export const deleteTask = catchAsync(async function (req, res) {
   }
 
   // verify jwt
-  const decoded = verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
+  const decoded = await verifyJWT(token); // { id: 3, iat: 174328615, exp: 1341134615 }
 
   if (decoded.id) {
     // Validates ID number
@@ -136,7 +137,7 @@ export const deleteTask = catchAsync(async function (req, res) {
     if (response?.status === "success") {
       return res.status(204).send("Successfully deleted!");
     } else {
-      res.status(500).send("Error Occurred: Try again later!");
+      return res.status(500).send("Error Occurred: Try again later!");
     }
   }
 });

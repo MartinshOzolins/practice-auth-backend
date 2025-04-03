@@ -21,7 +21,7 @@ export async function insertNewUser({ email, password }) {
       [email, password],
       function (err) {
         if (err) {
-          reject({ dbError: "Database query failed", details: err.message });
+          reject({ dbRegError: "Database query failed", details: err.message });
         } else {
           resolve({ userId: this.lastID });
         }
@@ -46,7 +46,7 @@ export async function fetchUserTasks(userId) {
 // Fetch all user tasks
 export async function fetchUserTask(userId, taskId) {
   return new Promise((resolve, reject) => {
-    db.all(
+    db.get(
       "SELECT * FROM tasks WHERE user_id = ? AND id = ?",
       [userId, taskId],
       (err, rows) => {
@@ -68,7 +68,10 @@ export async function insertNewUserTask(userId, title, description) {
       [userId, title, description],
       (err) => {
         if (err) {
-          reject({ dbError: "Database query failed", details: err.message });
+          reject({
+            dbError: "Database query failed",
+            details: err.message,
+          });
         } else {
           resolve({ status: "success" });
         }
@@ -80,15 +83,35 @@ export async function insertNewUserTask(userId, title, description) {
 // Delete a task
 export async function deleteUserTask(userId, taskId) {
   return new Promise((resolve, reject) => {
-    db.run(
-      "DELETE FROM tasks WHERE id = ? AND user_id = ?",
+    // First, fetch the task to check if exists
+    db.get(
+      "SELECT * FROM tasks WHERE id = ? AND user_id = ?",
       [taskId, userId],
-      function (err) {
+      (err, row) => {
         if (err) {
-          reject(err);
-        } else {
-          resolve({ status: "success" });
+          return reject({
+            dbError: "Database query failed",
+            details: err.message,
+          });
         }
+        if (!row) {
+          return reject({ dbDeleteError: "Task not found" });
+        }
+
+        // If task exists, delete it
+        db.run(
+          "DELETE FROM tasks WHERE id = ? AND user_id = ?",
+          [taskId, userId],
+          function (err) {
+            if (err) {
+              return reject({
+                dbError: "Failed to delete task",
+                details: err.message,
+              });
+            }
+            resolve({ status: "success" });
+          }
+        );
       }
     );
   });
