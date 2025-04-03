@@ -42,3 +42,19 @@ app.use("/api/tasks", taskRouter);
 app.use("*", (req, res) => {
   res.status(400).send(`Such route does not exist.`);
 });
+
+// Global Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  // Sends specific error messages related to jwt verify failure
+  if (err.name === "JsonWebTokenError") {
+    return res.status(401).send("Invalid token. Please log in again.");
+  } else if (err.name === "TokenExpiredError") {
+    return res
+      .status(401)
+      .send("Your session has expired. Please log in again.");
+  }
+
+  // Sends a generic server error response for any unhandled errors
+  res.status(500).send("Error Occurred: Try again later!");
+});
