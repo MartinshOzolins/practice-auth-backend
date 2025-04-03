@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import util from "node:util";
 
 export function signToken(id) {
+  // synchronously signs the given payload into a JSON Web Token string payload
   return jwt.sign({ id: id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
