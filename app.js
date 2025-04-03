@@ -59,7 +59,7 @@ app.use((err, req, res, next) => {
   // Database errors:
   // registration error
   if (err.dbRegError) {
-    return res.status(400).send("Error Occured. Such email already exists.");
+    return res.status(409).send("Error Occured. Such email already exists.");
   }
   // delete error
   if (err.dbDeleteError) {
